@@ -7,6 +7,7 @@ import Global from "./Global";
 export class Main extends Container {
 	private _size:Rectangle;
 	private _mainContainer:MainContainer;
+	private _xhr:XMLHttpRequest;
 
 	public static BORDER_SIZE:number = 200;
 
@@ -14,6 +15,26 @@ export class Main extends Container {
 		super();
 		this.initSize();
 		this.initPixiApp(canvasId);
+		this.xhrLoader();
+	}
+
+	private xhrLoader():void {
+		this._xhr = new XMLHttpRequest();
+		this._xhr.responseType = "text";
+		this._xhr.open("GET", "text.txt", true);
+		this._xhr.onreadystatechange = () => {
+			if (this._xhr.readyState === 4) {
+				if (this._xhr.status === 200) {
+					this.startOfTheProgram();
+				} else {
+					console.log("ERROR");
+				}
+			}
+		};
+		this._xhr.send();
+	}
+
+	private startOfTheProgram():void {
 		this.initMainContainer();
 		window.onresize = () => { this.resize(); };
 		this.resize();
@@ -34,7 +55,7 @@ export class Main extends Container {
 	}
 
 	private initMainContainer():void {
-		this._mainContainer = new MainContainer();
+		this._mainContainer = new MainContainer(this._xhr);
 		this._mainContainer.width = window.innerWidth;
 		this._mainContainer.height = window.innerHeight;
 		Global.PIXI_APP.stage.addChild(this._mainContainer);
