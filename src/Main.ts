@@ -1,10 +1,10 @@
 import Rectangle = PIXI.Rectangle;
 import Application = PIXI.Application;
 import Container = PIXI.Container;
-import MainContainer from "./Main_Container";
+import MainContainer from "./MainContainer";
+import Global from "./Global";
 
 export class Main extends Container {
-	public static pixiApp:Application;
 	private _size:Rectangle;
 	private _mainContainer:MainContainer;
 
@@ -24,20 +24,20 @@ export class Main extends Container {
 	}
 
 	private initPixiApp(canvasId:string):void {
-		Main.pixiApp = new Application({
+		Global.PIXI_APP = new Application({
 			backgroundColor: 0x000000,
 			view: document.getElementById(canvasId) as HTMLCanvasElement,
 			// needed to avoid troubles with invisible fonts on some Android devices
 			resolution: ((devicePixelRatio || 1) < 2) ? 1 : 2,
 		});
-		Main.pixiApp.stage.addChild(this);
+		Global.PIXI_APP.stage.addChild(this);
 	}
 
 	private initMainContainer():void {
 		this._mainContainer = new MainContainer();
 		this._mainContainer.width = window.innerWidth;
 		this._mainContainer.height = window.innerHeight;
-		Main.pixiApp.stage.addChild(this._mainContainer);
+		Global.PIXI_APP.stage.addChild(this._mainContainer);
 	}
 
 	private resize():void {
@@ -57,9 +57,9 @@ export class Main extends Container {
 	}
 
 	private alignPixiApp():void {
-		Main.pixiApp.renderer.view.style.width = this._size.width + "px";
-		Main.pixiApp.renderer.view.style.height = this._size.height + "px";
-		Main.pixiApp.renderer.resize(this._size.width, this._size.height);
+		Global.PIXI_APP.renderer.view.style.width = this._size.width + "px";
+		Global.PIXI_APP.renderer.view.style.height = this._size.height + "px";
+		Global.PIXI_APP.renderer.resize(this._size.width, this._size.height);
 	}
 
 	private alignContainer():void {
