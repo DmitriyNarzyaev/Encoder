@@ -28,10 +28,10 @@ export default class TextWindow extends Container {
 				fill: 0x000000,
 				align: 'left',
             });
-        this._textWindow.x = textGap*2;
+        this._textWindow.x = textGap;
         this._textWindow.style.wordWrap = true;
         this.addChild(this._textWindow);
 		this._textWindow.text = text;
-		this._textWindow.style.wordWrapWidth = textFieldWidth - textGap;
+		this._textWindow.style.wordWrapWidth = textFieldWidth - textGap*2;
 	}
 }

@@ -1,6 +1,18 @@
 import Container = PIXI.Container;
 
 export default class Encoder extends Container {
+private targetSymbols:string[] = [
+		"а", "б", "в", "г", "д", "е", "ё", "ж", "з", "и", "й", "к", "л", "м", "н",
+		"о", "п", "р", "с", "т", "у", "ф", "х", "ц", "ч", "ш", "щ", "ъ", "ы", "ь",
+		"э", "ю", "я", "(", ")", "-", "—"
+	];
+	private codeSymbols:string[] = [
+		"Ⴉ", "Ⴐ", "Ⴁ", "Ⴜ", "Ⴔ", "Ⴢ", "Ⴂ", "Ⴖ", "Ⴆ", "Ⴎ", "Ⴍ", "Ⴇ", "Ⴈ", "Ⴗ", "Ⴓ",
+		"Ⴣ", "Ⴒ", "Ⴛ", "Ⴝ", "Ⴙ", "Ⴃ", "Ⴋ", "Ⴞ", "Ⴟ", "Ⴀ", "Ⴚ", "Ⴊ", "Ⴌ", "Ⴅ", "Ⴑ",
+		"Ⴕ", "Ⴡ", "Ⴏ", "Ⴘ", "Ⴄ", "Ⴠ", "Ⴤ",
+		//"Ⴧ", "Ⴥ",
+	];
+
 	constructor() {
 		super();
 	}
@@ -17,41 +29,12 @@ export default class Encoder extends Container {
 	private encodeLetter(letter:string):string {
 		let codeLetter:string;
 		letter = letter.toLowerCase();
+		let charIndex:number = this.targetSymbols.indexOf(letter);
 
-		switch(letter) {
-			case "а":
-			codeLetter = "1"
-			break
-			case "б":
-			codeLetter = "2"
-			break
-            case "в":
-            codeLetter = "3"
-            break
-			case "г":
-            codeLetter = "4"
-            break
-			case "д":
-            codeLetter = "5"
-            break
-			case "е":
-            codeLetter = "6"
-            break
-			case "ё":
-            codeLetter = "7"
-            break
-			case "ж":
-            codeLetter = "8"
-            break
-			case "з":
-            codeLetter = "9"
-            break
-			case "и":
-            codeLetter = "0"
-            break
-
-			default:
-			codeLetter = letter
+		if (charIndex != -1) {
+			codeLetter = this.codeSymbols[charIndex];
+		} else {
+			codeLetter = letter;
 		}
 		return codeLetter;
 	}
