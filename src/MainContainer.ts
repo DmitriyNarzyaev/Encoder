@@ -8,14 +8,15 @@ export default class MainContainer extends Container {
 	public static readonly WIDTH:number = 1800;
 	public static readonly HEIGHT:number = 800;
 	private readonly _gap:number = 30;
-	private _targetText:string;
 	private _elementsColor:number = 0x007722;
+	private _textText:string = ""
+	private _targetTextWindow:TextWindow;
+	private _encodeTextWindow:TextWindow;
 
-	constructor(xhr:XMLHttpRequest) {
+	constructor() {
 		super();
-		this._targetText = xhr.responseText;
 		this.initialBackground();
-		this.initialElements(this._targetText);
+		this.initialTextWindows();
 	}
 
 	private initialBackground():void {
@@ -25,19 +26,7 @@ export default class MainContainer extends Container {
 		this.addChild(background);
 	}
 
-	private initialElements(targetText:string):void {
-		let targetTextDisplay = new TextWindow(targetText, this._elementsColor, MainContainer.WIDTH);
-		targetTextDisplay.x = this._gap;
-		targetTextDisplay.y = this._gap;
-		this.addChild(targetTextDisplay);
-
-		let encoder:Encoder = new Encoder;
-		let encodeText = encoder.encodeText(targetText);
-		let encodeTextDisplay = new TextWindow(encodeText, this._elementsColor, MainContainer.WIDTH);
-		encodeTextDisplay.x = this._gap;
-		encodeTextDisplay.y = targetTextDisplay.y + targetTextDisplay.height + this._gap;
-		this.addChild(encodeTextDisplay);
-
+	private initialButtons(encodeText:string):void {
 		let buttonContainer:PIXI.Container = new PIXI.Container;
 		this.addChild(buttonContainer);
 		this.initialOpenFileButton(buttonContainer);
@@ -63,8 +52,24 @@ export default class MainContainer extends Container {
 		buttonContainer.addChild(button);
 	}
 
-	private openFileButtonFunction():void {
+	private openFileButtonFunction():void {	
+		let input = document.createElement('input');
+		input.type = 'file';
+		input.onchange = e => { 
+			let file = e.target.files[0];			//FIXME!!!!!!!!!!!!!!!!!!!!!!!!!!
+			let reader = new FileReader();
+			reader.readAsText(file,'UTF-8');
+			reader.onload = readerEvent => {
+				var content = readerEvent.target.result;
+				console.log( content );
 
+				this.removeChild(this._targetTextWindow);
+				this.removeChild(this._encodeTextWindow);
+				this._textText = content.toString();
+				this.initialTextWindows();
+			}
+		}
+		input.click();
 	}
 
 	private saveButtonFunction(text:string):void {
@@ -74,5 +79,21 @@ export default class MainContainer extends Container {
         link.setAttribute("href", URL.createObjectURL(blob));
         link.setAttribute("download", "code_text.txt");
         link.click();
+	}
+
+	private initialTextWindows():void {
+		this._targetTextWindow = new TextWindow(this._textText, this._elementsColor, MainContainer.WIDTH);
+		this._targetTextWindow.x = this._gap;
+		this._targetTextWindow.y = this._gap;
+		this.addChild(this._targetTextWindow);
+
+		let encoder:Encoder = new Encoder;
+		let encodeText = encoder.encodeText(this._textText);
+		this._encodeTextWindow = new TextWindow(encodeText, this._elementsColor, MainContainer.WIDTH);
+		this._encodeTextWindow.x = this._gap;
+		this._encodeTextWindow.y = this._targetTextWindow.y + this._targetTextWindow.height + this._gap;
+		this.addChild(this._encodeTextWindow);
+
+		this.initialButtons(encodeText);
 	}
 }
