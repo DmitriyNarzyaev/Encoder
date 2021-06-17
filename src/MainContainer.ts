@@ -8,11 +8,14 @@ export default class MainContainer extends Container {
 	public static readonly WIDTH:number = 1800;
 	public static readonly HEIGHT:number = 800;
 	private readonly _gap:number = 30;
+	private _targetText:string;
+	private _elementsColor:number = 0x007722;
 
 	constructor(xhr:XMLHttpRequest) {
 		super();
+		this._targetText = xhr.responseText;
 		this.initialBackground();
-		this.initialTextWindow(xhr);
+		this.initialTextWindows(this._targetText);
 	}
 
 	private initialBackground():void {
@@ -22,26 +25,25 @@ export default class MainContainer extends Container {
 		this.addChild(background);
 	}
 
-	private initialTextWindow(xhr:XMLHttpRequest):void {
-		let text:string = xhr.responseText;
-		let targetTextDisplay = new TextWindow(text, 0x008833, MainContainer.WIDTH);
+	private initialTextWindows(targetText:string):void {
+		let targetTextDisplay = new TextWindow(targetText, this._elementsColor, MainContainer.WIDTH);
 		targetTextDisplay.x = this._gap;
 		targetTextDisplay.y = this._gap;
 		this.addChild(targetTextDisplay);
 
 		let encoder:Encoder = new Encoder;
-		let encodeText = encoder.encodeText(text);
-		let encodeTextDisplay = new TextWindow(encodeText, 0x880033, MainContainer.WIDTH);
+		let encodeText = encoder.encodeText(targetText);
+		let encodeTextDisplay = new TextWindow(encodeText, this._elementsColor, MainContainer.WIDTH);
 		encodeTextDisplay.x = this._gap;
 		encodeTextDisplay.y = targetTextDisplay.y + targetTextDisplay.height + this._gap;
 		this.addChild(encodeTextDisplay);
 
-		this.initialSaveButton(text);
+		this.initialSaveButton(encodeText);
 	}
 
 	private initialSaveButton(text:string):void {
 		let button:Button;
-		button = new Button("СКАЧАТЬ", 0x008833, () => { this.saveButtonFunction(text);});
+		button = new Button("СКАЧАТЬ", this._elementsColor, () => { this.saveButtonFunction(text);});
 		button.buttonMode = true;
 		button.interactive = true;
 		button.x = (MainContainer.WIDTH - button.width)/2;
@@ -50,12 +52,11 @@ export default class MainContainer extends Container {
 	}
 
 	private saveButtonFunction(text:string):void {
-		console.log("button test");
-
+		console.log("save button started");
 		let blob = new Blob([text], {type: "text/plain"});
         let link = document.createElement("a");
         link.setAttribute("href", URL.createObjectURL(blob));
-        link.setAttribute("download", "my-text.txt");
+        link.setAttribute("download", "code_text.txt");
         link.click();
 	}
 }
