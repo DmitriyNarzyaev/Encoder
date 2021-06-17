@@ -15,7 +15,7 @@ export default class MainContainer extends Container {
 		super();
 		this._targetText = xhr.responseText;
 		this.initialBackground();
-		this.initialTextWindows(this._targetText);
+		this.initialElements(this._targetText);
 	}
 
 	private initialBackground():void {
@@ -25,7 +25,7 @@ export default class MainContainer extends Container {
 		this.addChild(background);
 	}
 
-	private initialTextWindows(targetText:string):void {
+	private initialElements(targetText:string):void {
 		let targetTextDisplay = new TextWindow(targetText, this._elementsColor, MainContainer.WIDTH);
 		targetTextDisplay.x = this._gap;
 		targetTextDisplay.y = this._gap;
@@ -38,17 +38,33 @@ export default class MainContainer extends Container {
 		encodeTextDisplay.y = targetTextDisplay.y + targetTextDisplay.height + this._gap;
 		this.addChild(encodeTextDisplay);
 
-		this.initialSaveButton(encodeText);
+		let buttonContainer:PIXI.Container = new PIXI.Container;
+		this.addChild(buttonContainer);
+		this.initialOpenFileButton(buttonContainer);
+		this.initialSaveButton(buttonContainer, encodeText);
+		buttonContainer.x = (MainContainer.WIDTH - buttonContainer.width)/2;
+		buttonContainer.y = MainContainer.HEIGHT - buttonContainer.height - this._gap;
 	}
 
-	private initialSaveButton(text:string):void {
+	private initialOpenFileButton(buttonContainer:PIXI.Container):void {
 		let button:Button;
-		button = new Button("СКАЧАТЬ", this._elementsColor, () => { this.saveButtonFunction(text);});
+		button = new Button("OPEN", this._elementsColor, () => { this.openFileButtonFunction();});
 		button.buttonMode = true;
 		button.interactive = true;
-		button.x = (MainContainer.WIDTH - button.width)/2;
-		button.y = MainContainer.HEIGHT - button.height - this._gap;
-		this.addChild(button);
+		buttonContainer.addChild(button);
+	}
+
+	private initialSaveButton(buttonContainer:PIXI.Container, text:string):void {
+		let button:Button;
+		button = new Button("SAVE", this._elementsColor, () => { this.saveButtonFunction(text);});
+		button.buttonMode = true;
+		button.interactive = true;
+		button.x = button.width + this._gap;
+		buttonContainer.addChild(button);
+	}
+
+	private openFileButtonFunction():void {
+
 	}
 
 	private saveButtonFunction(text:string):void {
