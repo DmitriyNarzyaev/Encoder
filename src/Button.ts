@@ -1,13 +1,12 @@
 import Graphics = PIXI.Graphics;
-import MainContainer from "./MainContainer";
 
 export class Button extends Graphics {
 	private readonly _callback:()=>void;
 
-	constructor(text:string, color:number, callback:()=>void = null) {
+	constructor(text:string, color:number, callback:()=>void = null, windowWidth:number, windowHeight:number) {
 		super();
-		let buttonWidth:number = MainContainer.WIDTH/10;
-		let buttonHeight:number = MainContainer.HEIGHT/20;
+		let buttonWidth:number = windowWidth/10;
+		let buttonHeight:number = windowHeight/20;
 		this._callback = callback;
         
 		const button:PIXI.Graphics = new PIXI.Graphics();

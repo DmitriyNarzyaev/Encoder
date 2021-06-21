@@ -9,7 +9,7 @@ export default class MainContainer extends Container {
 	public static readonly HEIGHT:number = 800;
 	private readonly _gap:number = 30;
 	private _elementsColor:number = 0x007722;
-	private _textText:string = ""
+	private _textText:string = "";  //  --/r  /n
 	private _targetTextWindow:TextWindow;
 	private _encodeTextWindow:TextWindow;
 
@@ -37,7 +37,13 @@ export default class MainContainer extends Container {
 
 	private initialOpenFileButton(buttonContainer:PIXI.Container):void {
 		let button:Button;
-		button = new Button("OPEN", this._elementsColor, () => { this.openFileButtonFunction();});
+		button = new Button(
+			"OPEN",
+			this._elementsColor,
+			() => { this.openFileButtonFunction();},
+			MainContainer.WIDTH,
+			MainContainer.HEIGHT
+		);
 		button.buttonMode = true;
 		button.interactive = true;
 		buttonContainer.addChild(button);
@@ -45,7 +51,13 @@ export default class MainContainer extends Container {
 
 	private initialSaveButton(buttonContainer:PIXI.Container, text:string):void {
 		let button:Button;
-		button = new Button("SAVE", this._elementsColor, () => { this.saveButtonFunction(text);});
+		button = new Button(
+			"SAVE",
+			this._elementsColor,
+			() => { this.saveButtonFunction(text);},
+			MainContainer.WIDTH,
+			MainContainer.HEIGHT
+			);
 		button.buttonMode = true;
 		button.interactive = true;
 		button.x = button.width + this._gap;
@@ -56,16 +68,14 @@ export default class MainContainer extends Container {
 		let input = document.createElement('input');
 		input.type = 'file';
 		input.onchange = e => { 
-			let file = e.target.files[0];			//FIXME!!!!!!!!!!!!!!!!!!!!!!!!!!
+			let file = (e.target as HTMLInputElement).files[0];
 			let reader = new FileReader();
 			reader.readAsText(file,'UTF-8');
 			reader.onload = readerEvent => {
-				var content = readerEvent.target.result;
-				console.log( content );
-
 				this.removeChild(this._targetTextWindow);
 				this.removeChild(this._encodeTextWindow);
-				this._textText = content.toString();
+				var content:string = readerEvent.target.result as string;
+				this._textText = content;
 				this.initialTextWindows();
 			}
 		}

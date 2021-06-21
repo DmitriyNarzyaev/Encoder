@@ -2,12 +2,14 @@ import Container = PIXI.Container;
 
 export default class TextWindow extends Container {
 	private _textWindow:PIXI.Text;
+	private readonly _horizontalTextGap:number = 10;
+	private readonly _VerticalTextGap:number = 4;
 
 	constructor(text:string, color:number, mainWidth:number) {
 		super();
         let displayWidth:number = mainWidth - (mainWidth/10);
 		this.initialText(displayWidth, text);
-		this.initialTextWindowBorders(displayWidth, this._textWindow.height, color);
+		this.initialTextWindowBorders(displayWidth, (this._textWindow.height + this._VerticalTextGap*2), color);
 	}
 
 	private initialTextWindowBorders(windowWidth:number, windowHeight:number, color:number):void {
@@ -20,18 +22,19 @@ export default class TextWindow extends Container {
 	}
 
 	private initialText(textFieldWidth:number, text:string):void {
-		const textGap:number = 5;
 		this._textWindow = new PIXI.Text (
 			' loading... ', {
 				fontSize: 32,
+				//leading:0,
 				fontFamily: 'Times New Roman',
 				fill: 0x000000,
-				align: 'left',
+				align: 'left'
             });
-        this._textWindow.x = textGap;
+        this._textWindow.x = this._horizontalTextGap;
+        this._textWindow.y = this._VerticalTextGap;
         this._textWindow.style.wordWrap = true;
         this.addChild(this._textWindow);
 		this._textWindow.text = text;
-		this._textWindow.style.wordWrapWidth = textFieldWidth - textGap*2;
+		this._textWindow.style.wordWrapWidth = textFieldWidth - this._horizontalTextGap*2;
 	}
 }
