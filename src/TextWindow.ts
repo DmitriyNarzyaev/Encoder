@@ -16,7 +16,7 @@ export default class TextWindow extends Container {
 		let displayBackground:PIXI.Graphics = new PIXI.Graphics;
 		displayBackground
 			.beginFill(color, 0)
-			.lineStyle(3, color,)
+			.lineStyle(3, color)
 			.drawRect(0, 0, windowWidth, windowHeight);
 		this.addChild(displayBackground);
 	}

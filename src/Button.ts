@@ -1,6 +1,6 @@
-import Graphics = PIXI.Graphics;
+import { Container } from "pixi.js";
 
-export class Button extends Graphics {
+export class Button extends Container {
 	private readonly _callback:()=>void;
 
 	constructor(text:string, color:number, callback:()=>void = null, windowWidth:number, windowHeight:number) {

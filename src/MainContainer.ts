@@ -3,6 +3,7 @@ import { Graphics } from "pixi.js";
 import TextWindow from "./TextWindow";
 import Encoder from "./Encoder";
 import { Button } from "./Button";
+import { Scrollbar } from "./Scrollbar";
 
 export default class MainContainer extends Container {
 	public static readonly WIDTH:number = 1800;
@@ -12,11 +13,14 @@ export default class MainContainer extends Container {
 	private _textText:string = "";  //  --/r  /n
 	private _targetTextWindow:TextWindow;
 	private _encodeTextWindow:TextWindow;
+	private _scrollbar:Scrollbar;
+	private _buttonRegionHeight:number = MainContainer.HEIGHT/20 + this._gap*2;	//FIXME поправить - (MainContainer.HEIGHT/20)
 
 	constructor() {
 		super();
 		this.initialBackground();
 		this.initialTextWindows();
+		this.initialScrollbar();
 	}
 
 	private initialBackground():void {
@@ -27,12 +31,27 @@ export default class MainContainer extends Container {
 	}
 
 	private initialButtons(encodeText:string):void {
+		const buttonRegion:PIXI.Graphics = new PIXI.Graphics;
+		buttonRegion
+			.beginFill(0xffffff)
+			.drawRect(0, 0, MainContainer.WIDTH, this._buttonRegionHeight);
+		this.addChild(buttonRegion);
+		buttonRegion.y = MainContainer.HEIGHT - buttonRegion.height;
+
 		let buttonContainer:PIXI.Container = new PIXI.Container;
 		this.addChild(buttonContainer);
 		this.initialOpenFileButton(buttonContainer);
 		this.initialSaveButton(buttonContainer, encodeText);
 		buttonContainer.x = (MainContainer.WIDTH - buttonContainer.width)/2;
 		buttonContainer.y = MainContainer.HEIGHT - buttonContainer.height - this._gap;
+	}
+
+	private initialScrollbar():void {
+		const scrollbarHeight:number = MainContainer.HEIGHT - this._buttonRegionHeight - this._gap*2;
+		this._scrollbar = new Scrollbar(scrollbarHeight);
+		this._scrollbar.x = MainContainer.WIDTH - this._scrollbar.width - this._gap;
+		this._scrollbar.y = this._gap;
+		this.addChild(this._scrollbar);
 	}
 
 	private initialOpenFileButton(buttonContainer:PIXI.Container):void {
