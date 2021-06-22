@@ -5,11 +5,10 @@ export default class TextWindow extends Container {
 	private readonly _horizontalTextGap:number = 10;
 	private readonly _VerticalTextGap:number = 4;
 
-	constructor(text:string, color:number, mainWidth:number) {
+	constructor(text:string, color:number, windowWidth:number) {
 		super();
-        let displayWidth:number = mainWidth - (mainWidth/10);
-		this.initialText(displayWidth, text);
-		this.initialTextWindowBorders(displayWidth, (this._textWindow.height + this._VerticalTextGap*2), color);
+		this.initialText(windowWidth, text);
+		this.initialTextWindowBorders(windowWidth, (this._textWindow.height + this._VerticalTextGap*2), color);
 	}
 
 	private initialTextWindowBorders(windowWidth:number, windowHeight:number, color:number):void {

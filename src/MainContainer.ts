@@ -8,12 +8,13 @@ import { Scrollbar } from "./Scrollbar";
 export default class MainContainer extends Container {
 	public static readonly WIDTH:number = 1800;
 	public static readonly HEIGHT:number = 800;
-	private readonly _gap:number = 30;
+	private readonly _gap:number = 20;
 	private _elementsColor:number = 0x007722;
 	private _textText:string = "";  //  --/r  /n
 	private _targetTextWindow:TextWindow;
 	private _encodeTextWindow:TextWindow;
 	private _scrollbar:Scrollbar;
+	private _scrollbarWidth:number = 20;
 	private _buttonRegionHeight:number = MainContainer.HEIGHT/20 + this._gap*2;	//FIXME поправить - (MainContainer.HEIGHT/20)
 
 	constructor() {
@@ -33,7 +34,7 @@ export default class MainContainer extends Container {
 	private initialButtons(encodeText:string):void {
 		const buttonRegion:PIXI.Graphics = new PIXI.Graphics;
 		buttonRegion
-			.beginFill(0xffffff)
+			.beginFill(this._elementsColor, .5)
 			.drawRect(0, 0, MainContainer.WIDTH, this._buttonRegionHeight);
 		this.addChild(buttonRegion);
 		buttonRegion.y = MainContainer.HEIGHT - buttonRegion.height;
@@ -48,7 +49,11 @@ export default class MainContainer extends Container {
 
 	private initialScrollbar():void {
 		const scrollbarHeight:number = MainContainer.HEIGHT - this._buttonRegionHeight - this._gap*2;
-		this._scrollbar = new Scrollbar(scrollbarHeight);
+		this._scrollbar = new Scrollbar(
+			this._scrollbarWidth,
+			scrollbarHeight,
+			this._elementsColor
+		);
 		this._scrollbar.x = MainContainer.WIDTH - this._scrollbar.width - this._gap;
 		this._scrollbar.y = this._gap;
 		this.addChild(this._scrollbar);
@@ -111,14 +116,15 @@ export default class MainContainer extends Container {
 	}
 
 	private initialTextWindows():void {
-		this._targetTextWindow = new TextWindow(this._textText, this._elementsColor, MainContainer.WIDTH);
+		const windowWidth:number = MainContainer.WIDTH - this._scrollbarWidth - this._gap*3;
+		this._targetTextWindow = new TextWindow(this._textText, this._elementsColor, windowWidth);
 		this._targetTextWindow.x = this._gap;
 		this._targetTextWindow.y = this._gap;
 		this.addChild(this._targetTextWindow);
 
 		let encoder:Encoder = new Encoder;
 		let encodeText = encoder.encodeText(this._textText);
-		this._encodeTextWindow = new TextWindow(encodeText, this._elementsColor, MainContainer.WIDTH);
+		this._encodeTextWindow = new TextWindow(encodeText, this._elementsColor, windowWidth);
 		this._encodeTextWindow.x = this._gap;
 		this._encodeTextWindow.y = this._targetTextWindow.y + this._targetTextWindow.height + this._gap;
 		this.addChild(this._encodeTextWindow);
