@@ -11,17 +11,18 @@ export default class MainContainer extends Container {
 	private readonly _gap:number = 20;
 	private _elementsColor:number = 0x007722;
 	private _textText:string = "";  //  --/r  /n
+	private _textWindowsContainer:PIXI.Container
 	private _targetTextWindow:TextWindow;
 	private _encodeTextWindow:TextWindow;
 	private _scrollbar:Scrollbar;
 	private _scrollbarWidth:number = 20;
 	private _buttonRegionHeight:number = MainContainer.HEIGHT/20 + this._gap*2;	//FIXME поправить - (MainContainer.HEIGHT/20)
+	private _buttonsIsAdded:boolean = false;
 
 	constructor() {
 		super();
 		this.initialBackground();
 		this.initialTextWindows();
-		this.initialScrollbar();
 	}
 
 	private initialBackground():void {
@@ -45,18 +46,7 @@ export default class MainContainer extends Container {
 		this.initialSaveButton(buttonContainer, encodeText);
 		buttonContainer.x = (MainContainer.WIDTH - buttonContainer.width)/2;
 		buttonContainer.y = MainContainer.HEIGHT - buttonContainer.height - this._gap;
-	}
-
-	private initialScrollbar():void {
-		const scrollbarHeight:number = MainContainer.HEIGHT - this._buttonRegionHeight - this._gap*2;
-		this._scrollbar = new Scrollbar(
-			this._scrollbarWidth,
-			scrollbarHeight,
-			this._elementsColor
-		);
-		this._scrollbar.x = MainContainer.WIDTH - this._scrollbar.width - this._gap;
-		this._scrollbar.y = this._gap;
-		this.addChild(this._scrollbar);
+		this._buttonsIsAdded = true;
 	}
 
 	private initialOpenFileButton(buttonContainer:PIXI.Container):void {
@@ -96,8 +86,9 @@ export default class MainContainer extends Container {
 			let reader = new FileReader();
 			reader.readAsText(file,'UTF-8');
 			reader.onload = readerEvent => {
-				this.removeChild(this._targetTextWindow);
-				this.removeChild(this._encodeTextWindow);
+				this._textWindowsContainer.removeChild(this._targetTextWindow);
+				this._textWindowsContainer.removeChild(this._encodeTextWindow);
+				this.removeChild(this._scrollbar);
 				var content:string = readerEvent.target.result as string;
 				this._textText = content;
 				this.initialTextWindows();
@@ -115,20 +106,48 @@ export default class MainContainer extends Container {
         link.click();
 	}
 
+	private initialScrollbar():void {
+		const scrollbarHeight:number = MainContainer.HEIGHT - this._buttonRegionHeight - this._gap*2;
+		this._scrollbar = new Scrollbar(
+			this._scrollbarWidth,
+			scrollbarHeight,
+			this._elementsColor
+		);
+		this._scrollbar.x = MainContainer.WIDTH - this._scrollbar.width - this._gap;
+		this._scrollbar.y = this._gap;
+		this.addChild(this._scrollbar);
+	}
+
 	private initialTextWindows():void {
+		this._textWindowsContainer = new PIXI.Container;
+		this.addChild(this._textWindowsContainer)
+
+		let windowsMask:PIXI.Graphics = new PIXI.Graphics;
+		windowsMask
+			.beginFill(0xffffff)
+			.drawRect(0, 0, MainContainer.WIDTH, MainContainer.HEIGHT - this._buttonRegionHeight);
+		this.addChild(windowsMask);
+		this._textWindowsContainer.mask = windowsMask;
+
 		const windowWidth:number = MainContainer.WIDTH - this._scrollbarWidth - this._gap*3;
 		this._targetTextWindow = new TextWindow(this._textText, this._elementsColor, windowWidth);
 		this._targetTextWindow.x = this._gap;
 		this._targetTextWindow.y = this._gap;
-		this.addChild(this._targetTextWindow);
+		this._textWindowsContainer.addChild(this._targetTextWindow);
 
 		let encoder:Encoder = new Encoder;
 		let encodeText = encoder.encodeText(this._textText);
 		this._encodeTextWindow = new TextWindow(encodeText, this._elementsColor, windowWidth);
 		this._encodeTextWindow.x = this._gap;
 		this._encodeTextWindow.y = this._targetTextWindow.y + this._targetTextWindow.height + this._gap;
-		this.addChild(this._encodeTextWindow);
+		this._textWindowsContainer.addChild(this._encodeTextWindow);
 
-		this.initialButtons(encodeText);
+		if (this._buttonsIsAdded == false) {
+			this.initialButtons(encodeText);
+		}
+
+		if (this._textWindowsContainer.height > (MainContainer.HEIGHT - this._buttonRegionHeight)) {
+			this.initialScrollbar();
+		}
 	}
 }

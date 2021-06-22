@@ -16,24 +16,7 @@ export class Main extends Container {
 		this.initSize();
 		this.initPixiApp(canvasId);
 		this.startOfTheProgram();
-		//this.xhrLoader();
 	}
-
-	// private xhrLoader():void {
-	// 	this._xhr = new XMLHttpRequest();
-	// 	this._xhr.responseType = "text";
-	// 	this._xhr.open("GET", "text.txt", true);
-	// 	this._xhr.onreadystatechange = () => {
-	// 		if (this._xhr.readyState === 4) {
-	// 			if (this._xhr.status === 200) {
-	// 				this.startOfTheProgram();
-	// 			} else {
-	// 				console.log("ERROR");
-	// 			}
-	// 		}
-	// 	};
-	// 	this._xhr.send();
-	// }
 
 	private startOfTheProgram():void {
 		this.initMainContainer();
