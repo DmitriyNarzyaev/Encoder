@@ -1,9 +1,11 @@
 import Container = PIXI.Container;
-import { Graphics } from "pixi.js";
+import { Graphics, IPoint } from "pixi.js";
 import TextWindow from "./TextWindow";
 import Encoder from "./Encoder";
 import { Button } from "./Button";
 import { Scrollbar } from "./Scrollbar";
+import InteractionEvent = PIXI.interaction.InteractionEvent;
+import Global from "./Global";
 
 export default class MainContainer extends Container {
 	public static readonly WIDTH:number = 1800;
@@ -18,6 +20,9 @@ export default class MainContainer extends Container {
 	private _scrollbarWidth:number = 20;
 	private _buttonRegionHeight:number = MainContainer.HEIGHT/20 + this._gap*2;	//FIXME поправить - (MainContainer.HEIGHT/20)
 	private _buttonsIsAdded:boolean = false;
+	private _buttonDown:boolean = false;
+	private _buttonUp:boolean = false;
+
 
 	constructor() {
 		super();
@@ -88,6 +93,8 @@ export default class MainContainer extends Container {
 			reader.onload = readerEvent => {
 				this._textWindowsContainer.removeChild(this._targetTextWindow);
 				this._textWindowsContainer.removeChild(this._encodeTextWindow);
+				Global.PIXI_APP.ticker.remove(this.ticker, this);
+					window.removeEventListener									//FIXME!!!!!!!!!!!!!!!!!!
 				this.removeChild(this._scrollbar);
 				var content:string = readerEvent.target.result as string;
 				this._textText = content;
@@ -148,6 +155,48 @@ export default class MainContainer extends Container {
 
 		if (this._textWindowsContainer.height > (MainContainer.HEIGHT - this._buttonRegionHeight)) {
 			this.initialScrollbar();
+
+			Global.PIXI_APP.ticker.add(this.ticker, this);
+
+			window.addEventListener("keydown",
+			(e:KeyboardEvent) => {
+				this.keyDownHandler(e);
+			},);
+			window.addEventListener("keyup",
+			(e:KeyboardEvent) => {
+				this.keyUpHandler(e);
+			},);
+		}
+	}
+
+	private keyDownHandler(e:KeyboardEvent):void {
+		if (e.code == "ArrowUp") {
+			this._buttonUp = true;
+		}
+		if (e.code == "ArrowDown") {
+			this._buttonDown = true;
+		}
+
+		console.log("button down");
+	}
+
+	private keyUpHandler(e:KeyboardEvent):void {
+		if (e.code == "ArrowUp") {
+			this._buttonUp = false;
+		}
+		if (e.code == "ArrowDown") {
+			this._buttonDown = false;
+		}
+	}
+
+	private ticker():void {
+		let yMin:number = MainContainer.HEIGHT - this._textWindowsContainer.height
+			- this._gap*2 - this._buttonRegionHeight;
+		if (this._buttonDown == true && this._textWindowsContainer.y >= yMin){
+			this._textWindowsContainer.y -= 5;
+		}
+		if (this._buttonUp == true && this._textWindowsContainer.y < 0) {
+			this._textWindowsContainer.y += 5;
 		}
 	}
 }
