@@ -3,12 +3,12 @@ import { Container } from "pixi.js";
 export class Button extends Container {
 	private readonly _callback:()=>void;
 
-	constructor(text:string, color:number, callback:()=>void = null, windowWidth:number, windowHeight:number) {
+	constructor(text:string, color:number, callback:()=>void = null, buttonWidth:number, buttonHeight:number) {
 		super();
-		let buttonWidth:number = windowWidth/10;
-		let buttonHeight:number = windowHeight/20;
 		this._callback = callback;
         
+		console.log("bh = " + buttonHeight);
+
 		const button:PIXI.Graphics = new PIXI.Graphics();
 		button.beginFill(color, 1);
 		button.drawRoundedRect(0, 0, buttonWidth, buttonHeight, buttonHeight/3);

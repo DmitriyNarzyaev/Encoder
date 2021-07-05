@@ -1,17 +1,20 @@
 import { Container } from "pixi.js";
 
 export class Scrollbar extends Container {
-    private _scrollingRegion:PIXI.Graphics;
     public slider:PIXI.Graphics;
+    private _scrollingRegion:PIXI.Graphics;
 
-	constructor(scrollbarWidth:number, scrollbarHeight:number, scrollbarColor:number) {
+	constructor(scrollbarWidth:number, scrollbarHeight:number, sliderHeight:number, scrollbarColor:number) {
 		super();
 	    this.initialScrollingRegion(
             scrollbarWidth,
             scrollbarHeight,
             scrollbarColor
         );
-	    this.initialSlider(scrollbarColor);
+	    this.initialSlider(
+            sliderHeight,
+            scrollbarColor
+        );
     }
 
     private initialScrollingRegion(scrollingRegionWidth:number, scrollingRegionHeight:number, color:number):void {
@@ -22,13 +25,15 @@ export class Scrollbar extends Container {
         this.addChild(this._scrollingRegion);
     }
 
-    private initialSlider(color:number):void {
+    private initialSlider(sliderHeight:number, color:number):void {
         this.slider = new PIXI.Graphics;
         this.slider
             .beginFill(color)
-            .drawRect(0, 0, this._scrollingRegion.width, 50);
+            .drawRect(0, 0, this._scrollingRegion.width, sliderHeight);
         this.slider.x = this._scrollingRegion.x;
         this.slider.y = this._scrollingRegion.y;
+        this.slider.interactive = true;
+        this.slider.buttonMode = true;
         this.addChild(this.slider);
     }
 }

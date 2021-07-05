@@ -28,7 +28,8 @@ export default class TextWindow extends Container {
 				fontFamily: 'Times New Roman',
 				fill: 0x000000,
 				align: 'left'
-            });
+			}
+		);
         this._textWindow.x = this._horizontalTextGap;
         this._textWindow.y = this._VerticalTextGap;
         this._textWindow.style.wordWrap = true;

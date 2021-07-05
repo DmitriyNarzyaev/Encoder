@@ -5,7 +5,6 @@ import Encoder from "./Encoder";
 import { Button } from "./Button";
 import { Scrollbar } from "./Scrollbar";
 import InteractionEvent = PIXI.interaction.InteractionEvent;
-import Global from "./Global";
 
 export default class MainContainer extends Container {
 	public static readonly WIDTH:number = 1800;
@@ -16,13 +15,16 @@ export default class MainContainer extends Container {
 	private _textWindowsContainer:PIXI.Container
 	private _targetTextWindow:TextWindow;
 	private _encodeTextWindow:TextWindow;
+	private _buttonWidth:number = MainContainer.WIDTH / 10;
+	private _buttonHeight:number = MainContainer.HEIGHT / 20;
+	private _buttonRegionHeight:number = this._buttonHeight + this._gap*2;	//FIXME поправить - (MainContainer.HEIGHT/20)
 	private _scrollbar:Scrollbar;
 	private _scrollbarWidth:number = 20;
-	private _buttonRegionHeight:number = MainContainer.HEIGHT/20 + this._gap*2;	//FIXME поправить - (MainContainer.HEIGHT/20)
-	private _buttonsIsAdded:boolean = false;
-	private _buttonDown:boolean = false;
-	private _buttonUp:boolean = false;
+	private _scrollbarHeight:number = MainContainer.HEIGHT - this._buttonRegionHeight - this._gap*2;
 
+	private _buttonsIsAdded:boolean = false;
+
+	private _touchDownY:number;
 
 	constructor() {
 		super();
@@ -60,8 +62,8 @@ export default class MainContainer extends Container {
 			"OPEN",
 			this._elementsColor,
 			() => { this.openFileButtonFunction();},
-			MainContainer.WIDTH,
-			MainContainer.HEIGHT
+			this._buttonWidth,
+			this._buttonHeight
 		);
 		button.buttonMode = true;
 		button.interactive = true;
@@ -74,8 +76,8 @@ export default class MainContainer extends Container {
 			"SAVE",
 			this._elementsColor,
 			() => { this.saveButtonFunction(text);},
-			MainContainer.WIDTH,
-			MainContainer.HEIGHT
+			this._buttonWidth,
+			this._buttonHeight
 			);
 		button.buttonMode = true;
 		button.interactive = true;
@@ -93,8 +95,6 @@ export default class MainContainer extends Container {
 			reader.onload = readerEvent => {
 				this._textWindowsContainer.removeChild(this._targetTextWindow);
 				this._textWindowsContainer.removeChild(this._encodeTextWindow);
-				Global.PIXI_APP.ticker.remove(this.ticker, this);
-					window.removeEventListener									//FIXME!!!!!!!!!!!!!!!!!!
 				this.removeChild(this._scrollbar);
 				var content:string = readerEvent.target.result as string;
 				this._textText = content;
@@ -113,16 +113,59 @@ export default class MainContainer extends Container {
         link.click();
 	}
 
-	private initialScrollbar():void {
-		const scrollbarHeight:number = MainContainer.HEIGHT - this._buttonRegionHeight - this._gap*2;
+	private initialScrollbar(contentHeight:number):void {
+		const sliderHeight:number = this._scrollbarHeight
+			* ((MainContainer.HEIGHT - this._buttonRegionHeight)
+			/ contentHeight);
 		this._scrollbar = new Scrollbar(
 			this._scrollbarWidth,
-			scrollbarHeight,
+			this._scrollbarHeight,
+			sliderHeight,
 			this._elementsColor
 		);
 		this._scrollbar.x = MainContainer.WIDTH - this._scrollbar.width - this._gap;
 		this._scrollbar.y = this._gap;
 		this.addChild(this._scrollbar);
+
+		this._scrollbar.slider
+			.addListener('pointerdown', this.onDragStart, this)
+			.addListener('pointerup', this.onDragEnd, this)
+			.addListener('pointerupoutside', this.onDragEnd, this)
+	}
+
+	private onDragStart(event:InteractionEvent):void {
+		this._touchDownY = this._scrollbar.slider.toLocal(event.data.global).y;
+		this._scrollbar.slider.addListener('pointermove', this.onDragMove, this);
+		this._scrollbar.slider.tint =  0x80baf3;
+	}
+
+	private onDragEnd():void {
+		this._touchDownY = 0;
+		this._scrollbar.slider.removeListener('pointermove', this.onDragMove, this);
+		this._scrollbar.slider.tint =  0xffffff;
+	}
+
+	private onDragMove(event:InteractionEvent):void {
+		const newPosition:IPoint = event.data.getLocalPosition(this._scrollbar);
+		this._scrollbar.slider.y = newPosition.y - this._touchDownY;
+		this.sliderYLimit();
+		this.movingContent();
+	}
+
+	private sliderYLimit():void {
+		if (this._scrollbar.slider.y <= (0)) {
+			this._scrollbar.slider.y = 0;
+		}
+		if (this._scrollbar.slider.y >= MainContainer.HEIGHT - this._buttonRegionHeight - this._gap*2 - this._scrollbar.slider.height) {
+			this._scrollbar.slider.y = MainContainer.HEIGHT - this._buttonRegionHeight - this._gap*2 - this._scrollbar.slider.height;
+		}
+	}
+
+	private movingContent():void {
+		this._textWindowsContainer.y = this._gap - (this._scrollbar.slider.y) * (
+			(this._textWindowsContainer.height - this._scrollbarHeight)
+			/ (this._scrollbarHeight - this._scrollbar.slider.height)
+		);
 	}
 
 	private initialTextWindows():void {
@@ -131,7 +174,7 @@ export default class MainContainer extends Container {
 
 		let windowsMask:PIXI.Graphics = new PIXI.Graphics;
 		windowsMask
-			.beginFill(0xffffff)
+			.beginFill(0xFF3300)
 			.drawRect(0, 0, MainContainer.WIDTH, MainContainer.HEIGHT - this._buttonRegionHeight);
 		this.addChild(windowsMask);
 		this._textWindowsContainer.mask = windowsMask;
@@ -139,7 +182,6 @@ export default class MainContainer extends Container {
 		const windowWidth:number = MainContainer.WIDTH - this._scrollbarWidth - this._gap*3;
 		this._targetTextWindow = new TextWindow(this._textText, this._elementsColor, windowWidth);
 		this._targetTextWindow.x = this._gap;
-		this._targetTextWindow.y = this._gap;
 		this._textWindowsContainer.addChild(this._targetTextWindow);
 
 		let encoder:Encoder = new Encoder;
@@ -148,55 +190,14 @@ export default class MainContainer extends Container {
 		this._encodeTextWindow.x = this._gap;
 		this._encodeTextWindow.y = this._targetTextWindow.y + this._targetTextWindow.height + this._gap;
 		this._textWindowsContainer.addChild(this._encodeTextWindow);
+		this._textWindowsContainer.y = this._gap;
 
 		if (this._buttonsIsAdded == false) {
 			this.initialButtons(encodeText);
 		}
 
 		if (this._textWindowsContainer.height > (MainContainer.HEIGHT - this._buttonRegionHeight)) {
-			this.initialScrollbar();
-
-			Global.PIXI_APP.ticker.add(this.ticker, this);
-
-			window.addEventListener("keydown",
-			(e:KeyboardEvent) => {
-				this.keyDownHandler(e);
-			},);
-			window.addEventListener("keyup",
-			(e:KeyboardEvent) => {
-				this.keyUpHandler(e);
-			},);
-		}
-	}
-
-	private keyDownHandler(e:KeyboardEvent):void {
-		if (e.code == "ArrowUp") {
-			this._buttonUp = true;
-		}
-		if (e.code == "ArrowDown") {
-			this._buttonDown = true;
-		}
-
-		console.log("button down");
-	}
-
-	private keyUpHandler(e:KeyboardEvent):void {
-		if (e.code == "ArrowUp") {
-			this._buttonUp = false;
-		}
-		if (e.code == "ArrowDown") {
-			this._buttonDown = false;
-		}
-	}
-
-	private ticker():void {
-		let yMin:number = MainContainer.HEIGHT - this._textWindowsContainer.height
-			- this._gap*2 - this._buttonRegionHeight;
-		if (this._buttonDown == true && this._textWindowsContainer.y >= yMin){
-			this._textWindowsContainer.y -= 5;
-		}
-		if (this._buttonUp == true && this._textWindowsContainer.y < 0) {
-			this._textWindowsContainer.y += 5;
+			this.initialScrollbar(this._textWindowsContainer.height);
 		}
 	}
 }

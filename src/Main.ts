@@ -7,7 +7,6 @@ import Global from "./Global";
 export class Main extends Container {
 	private _size:Rectangle;
 	private _mainContainer:MainContainer;
-	private _xhr:XMLHttpRequest;
 
 	public static BORDER_SIZE:number = 200;
 
