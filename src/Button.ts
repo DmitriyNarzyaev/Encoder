@@ -6,8 +6,6 @@ export class Button extends Container {
 	constructor(text:string, color:number, callback:()=>void = null, buttonWidth:number, buttonHeight:number) {
 		super();
 		this._callback = callback;
-        
-		console.log("bh = " + buttonHeight);
 
 		const button:PIXI.Graphics = new PIXI.Graphics();
 		button.beginFill(color, 1);

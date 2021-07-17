@@ -21,15 +21,20 @@ export default class MainContainer extends Container {
 	private _scrollbar:Scrollbar;
 	private _scrollbarWidth:number = 20;
 	private _scrollbarHeight:number = MainContainer.HEIGHT - this._buttonRegionHeight - this._gap*2;
-
 	private _buttonsIsAdded:boolean = false;
+	private _scrollbarTouchDownY:number;
+	private _textContainerTouchDownY:number;
+	private _percentage:number;
 
-	private _touchDownY:number;
+	private _wheelHandler:()=>void;
 
 	constructor() {
 		super();
 		this.initialBackground();
 		this.initialTextWindows();
+
+		this._wheelHandler = MainContainer.addEvent(document, "wheel", this.movingContentForWheel.bind(this));
+
 	}
 
 	private initialBackground():void {
@@ -128,28 +133,28 @@ export default class MainContainer extends Container {
 		this.addChild(this._scrollbar);
 
 		this._scrollbar.slider
-			.addListener('pointerdown', this.onDragStart, this)
-			.addListener('pointerup', this.onDragEnd, this)
-			.addListener('pointerupoutside', this.onDragEnd, this)
+			.addListener('pointerdown', this.scrollbarOnDragStart, this)
+			.addListener('pointerup', this.scrollbarOnDragEnd, this)
+			.addListener('pointerupoutside', this.scrollbarOnDragEnd, this)
 	}
 
-	private onDragStart(event:InteractionEvent):void {
-		this._touchDownY = this._scrollbar.slider.toLocal(event.data.global).y;
-		this._scrollbar.slider.addListener('pointermove', this.onDragMove, this);
+	private scrollbarOnDragStart(event:InteractionEvent):void {
+		this._scrollbarTouchDownY = this._scrollbar.slider.toLocal(event.data.global).y;
+		this._scrollbar.slider.addListener('pointermove', this.scrollbarOnDragMove, this);
 		this._scrollbar.slider.tint =  0x80baf3;
 	}
 
-	private onDragEnd():void {
-		this._touchDownY = 0;
-		this._scrollbar.slider.removeListener('pointermove', this.onDragMove, this);
+	private scrollbarOnDragEnd():void {
+		this._scrollbarTouchDownY = 0;
+		this._scrollbar.slider.removeListener('pointermove', this.scrollbarOnDragMove, this);
 		this._scrollbar.slider.tint =  0xffffff;
 	}
 
-	private onDragMove(event:InteractionEvent):void {
+	private scrollbarOnDragMove(event:InteractionEvent):void {
 		const newPosition:IPoint = event.data.getLocalPosition(this._scrollbar);
-		this._scrollbar.slider.y = newPosition.y - this._touchDownY;
+		this._scrollbar.slider.y = newPosition.y - this._scrollbarTouchDownY;
 		this.sliderYLimit();
-		this.movingContent();
+		this.movingContentForScrollbardrag();
 	}
 
 	private sliderYLimit():void {
@@ -161,11 +166,37 @@ export default class MainContainer extends Container {
 		}
 	}
 
-	private movingContent():void {
-		this._textWindowsContainer.y = this._gap - (this._scrollbar.slider.y) * (
+	private movingContentForScrollbardrag():void {
+		let workingLength:number = this._scrollbarHeight - this._scrollbar.slider.height;
+		this._percentage = this._scrollbar.slider.y / workingLength;
+		console.log(this._percentage);
+
+		this._textWindowsContainer.y = (
 			(this._textWindowsContainer.height - this._scrollbarHeight)
-			/ (this._scrollbarHeight - this._scrollbar.slider.height)
-		);
+			* -this._percentage) + this._gap;
+	}
+
+	private movingScrollbarForContentdrag():void {
+		let workingLength:number = this._scrollbarHeight - this._textWindowsContainer.height;
+		this._percentage = (this._textWindowsContainer.y - this._gap) / workingLength;
+		console.log(this._percentage);
+
+		this._scrollbar.slider.y = (
+			(this._scrollbarHeight - this._scrollbar.slider.height)
+			* this._percentage);
+	}
+
+	private movingContentForWheel(wheelEvent:WheelEvent):void {
+		console.log("***********");
+
+
+
+		this._textWindowsContainer.y += 1;
+
+
+
+
+
 	}
 
 	private initialTextWindows():void {
@@ -198,6 +229,54 @@ export default class MainContainer extends Container {
 
 		if (this._textWindowsContainer.height > (MainContainer.HEIGHT - this._buttonRegionHeight)) {
 			this.initialScrollbar(this._textWindowsContainer.height);
+		}
+
+		this._textWindowsContainer.interactive = true;
+		this._textWindowsContainer.buttonMode = true;
+
+		this._textWindowsContainer
+			.addListener('pointerdown', this.textOnDragStart, this)
+			.addListener('pointerup', this.textOnDragEnd, this)
+			.addListener('pointerupoutside', this.textOnDragEnd, this);
+	}
+
+	private textOnDragStart(event:InteractionEvent):void {
+		this._textContainerTouchDownY = this._textWindowsContainer.toLocal(event.data.global).y;
+		this._textWindowsContainer.addListener('pointermove', this.textOnDragMove, this);
+	}
+
+	private textOnDragEnd():void {
+		this._textContainerTouchDownY = 0;
+		this._textWindowsContainer.removeListener('pointermove', this.textOnDragMove, this);
+	}
+
+	private textOnDragMove(event:InteractionEvent):void {
+		const newPosition:IPoint = event.data.getLocalPosition(this);
+		this._textWindowsContainer.y = newPosition.y - this._textContainerTouchDownY;
+		this.movingScrollbarForContentdrag();
+	}
+
+	private static addEvent(object:any, type:string, callback:() => void):() => void {
+		if (object.addEventListener) {
+			object.addEventListener(type, callback, false);
+		} else if (object.attachEvent) {
+			object.attachEvent("on" + type, callback);
+		} else {
+			object["on" + type] = callback;
+		}
+		return callback;
+	}
+
+	private static removeEvent(object:any, type:string, callback:() => void) {
+		if (object == null || typeof(object) === "undefined") {
+			return;
+		}
+		if (object.removeEventListener) {
+			object.removeEventListener(type, callback, false);
+		} else if (object.dettachEvent) {
+			object.detachEvent("on" + type, callback);
+		} else {
+			object["on" + type] = null;
 		}
 	}
 }
