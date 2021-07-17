@@ -32,9 +32,7 @@ export default class MainContainer extends Container {
 		super();
 		this.initialBackground();
 		this.initialTextWindows();
-
 		this._wheelHandler = MainContainer.addEvent(document, "wheel", this.movingContentForWheel.bind(this));
-
 	}
 
 	private initialBackground():void {
