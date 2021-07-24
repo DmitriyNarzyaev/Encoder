@@ -12,6 +12,7 @@ export default class MainContainer extends Container {
 	private readonly _gap:number = 20;
 	private _elementsColor:number = 0x007722;
 	private _textText:string = "";  //  --/r  /n
+	private _encodeText:string = "";  //  --/r  /n
 	private _textWindowsContainer:PIXI.Container
 	private _targetTextWindow:TextWindow;
 	private _encodeTextWindow:TextWindow;
@@ -25,7 +26,6 @@ export default class MainContainer extends Container {
 	private _scrollbarTouchDownY:number;
 	private _textContainerTouchDownY:number;
 	private _percentage:number;
-
 	private _wheelHandler:()=>void;
 
 	constructor() {
@@ -42,7 +42,7 @@ export default class MainContainer extends Container {
 		this.addChild(background);
 	}
 
-	private initialButtons(encodeText:string):void {
+	private initialButtons():void {
 		const buttonRegion:PIXI.Graphics = new PIXI.Graphics;
 		buttonRegion
 			.beginFill(this._elementsColor, .5)
@@ -53,7 +53,7 @@ export default class MainContainer extends Container {
 		let buttonContainer:PIXI.Container = new PIXI.Container;
 		this.addChild(buttonContainer);
 		this.initialOpenFileButton(buttonContainer);
-		this.initialSaveButton(buttonContainer, encodeText);
+		this.initialSaveButton(buttonContainer);
 		buttonContainer.x = (MainContainer.WIDTH - buttonContainer.width)/2;
 		buttonContainer.y = MainContainer.HEIGHT - buttonContainer.height - this._gap;
 		this._buttonsIsAdded = true;
@@ -73,12 +73,12 @@ export default class MainContainer extends Container {
 		buttonContainer.addChild(button);
 	}
 
-	private initialSaveButton(buttonContainer:PIXI.Container, text:string):void {
+	private initialSaveButton(buttonContainer:PIXI.Container):void {
 		let button:Button;
 		button = new Button(
 			"SAVE",
 			this._elementsColor,
-			() => { this.saveButtonFunction(text);},
+			() => { this.saveButtonFunction();},
 			this._buttonWidth,
 			this._buttonHeight
 			);
@@ -107,13 +107,14 @@ export default class MainContainer extends Container {
 		input.click();
 	}
 
-	private saveButtonFunction(text:string):void {
+	private saveButtonFunction():void {
 		console.log("save button started");
-		let blob = new Blob([text], {type: "text/plain"});
+		let blob = new Blob([this._encodeText], {type: "text/plain"});
         let link = document.createElement("a");
         link.setAttribute("href", URL.createObjectURL(blob));
         link.setAttribute("download", "code_text.txt");
         link.click();
+		console.log("text" + this._encodeText);
 	}
 
 	private initialScrollbar(contentHeight:number):void {
@@ -228,15 +229,15 @@ export default class MainContainer extends Container {
 		this._textWindowsContainer.addChild(this._targetTextWindow);
 
 		let encoder:Encoder = new Encoder;
-		let encodeText = encoder.encodeText(this._textText);
-		this._encodeTextWindow = new TextWindow(encodeText, this._elementsColor, windowWidth);
+		this._encodeText = encoder.encodeText(this._textText);
+		this._encodeTextWindow = new TextWindow(this._encodeText, this._elementsColor, windowWidth);
 		this._encodeTextWindow.x = this._gap;
 		this._encodeTextWindow.y = this._targetTextWindow.y + this._targetTextWindow.height + this._gap;
 		this._textWindowsContainer.addChild(this._encodeTextWindow);
 		this._textWindowsContainer.y = this._gap;
 
 		if (this._buttonsIsAdded == false) {
-			this.initialButtons(encodeText);
+			this.initialButtons();
 		}
 
 		if (this._textWindowsContainer.height > (MainContainer.HEIGHT - this._buttonRegionHeight)) {
