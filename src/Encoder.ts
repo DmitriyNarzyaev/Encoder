@@ -7,9 +7,9 @@ private targetSymbols:string[] = [
 		"э", "ю", "я", "(", ")", "-", "—"
 	];
 	private codeSymbols:string[] = [
-		"Ⴉ", "Ⴐ", "Ⴁ", "Ⴜ", "Ⴔ", "Ⴢ", "Ⴂ", "Ⴖ", "Ⴆ", "Ⴎ", "Ⴍ", "Ⴇ", "Ⴈ", "Ⴗ", "Ⴓ",
-		"Ⴣ", "Ⴒ", "Ⴛ", "Ⴝ", "Ⴙ", "Ⴃ", "Ⴋ", "Ⴞ", "Ⴟ", "Ⴀ", "Ⴚ", "Ⴊ", "Ⴌ", "Ⴅ", "Ⴑ",
-		"Ⴕ", "Ⴡ", "Ⴏ", "Ⴘ", "Ⴄ", "Ⴠ", "Ⴤ",
+		"1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "-", "a", "b", "d", "e",
+		"f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
+		"u", "v", "w", "x", "y", "z", "%",
 		//"Ⴧ", "Ⴥ",
 	];
 
@@ -18,12 +18,21 @@ private targetSymbols:string[] = [
 	}
 
 	public encodeText(text:string):string {
-		let encodeText:string = "";
+		let encodedText:string = "";
 		for (let iterator:number = 0; iterator < text.length; iterator ++) {
 			let targetLetter:string = text[iterator];
-			encodeText += this.encodeLetter(targetLetter);
+			encodedText += this.encodeLetter(targetLetter);
 		}
-        return encodeText;
+        return encodedText;
+	}
+
+	public decodeText(text:string):string {
+		let decodedText:string = "";
+		for (let iterator:number = 0; iterator < text.length; iterator ++) {
+			let targetLetter:string = text[iterator];
+			decodedText += this.decodeLetter(targetLetter);
+		}
+        return decodedText;
 	}
 
 	private encodeLetter(letter:string):string {
@@ -33,6 +42,20 @@ private targetSymbols:string[] = [
 
 		if (charIndex != -1) {
 			codeLetter = this.codeSymbols[charIndex];
+		} else {
+			codeLetter = letter;
+		}
+		return codeLetter;
+	}
+
+	private decodeLetter(letter:string):string {
+		let codeLetter:string;
+		letter = letter.toLowerCase();
+		let charIndex:number = this.codeSymbols.indexOf(letter);
+		console.log(letter);
+
+		if (charIndex != -1) {
+			codeLetter = this.targetSymbols[charIndex];
 		} else {
 			codeLetter = letter;
 		}

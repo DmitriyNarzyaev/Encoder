@@ -229,7 +229,7 @@ export default class MainContainer extends Container {
 		this._textWindowsContainer.addChild(this._targetTextWindow);
 
 		let encoder:Encoder = new Encoder;
-		this._encodeText = encoder.encodeText(this._textText);
+		this._encodeText = encoder.decodeText(this._textText);
 		this._encodeTextWindow = new TextWindow(this._encodeText, this._elementsColor, windowWidth);
 		this._encodeTextWindow.x = this._gap;
 		this._encodeTextWindow.y = this._targetTextWindow.y + this._targetTextWindow.height + this._gap;
