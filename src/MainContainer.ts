@@ -156,12 +156,26 @@ export default class MainContainer extends Container {
 	}
 
 	private sliderYLimit():void {
-		if (this._scrollbar.slider.y <= (0)) {
-			this._scrollbar.slider.y = 0;
+		let scrollbarLimitMin:number = 0;
+		let scrollbarLimitMax:number = MainContainer.HEIGHT - this._buttonRegionHeight
+			- this._gap*2 - this._scrollbar.slider.height;
+		if (this._scrollbar.slider.y <= scrollbarLimitMin) {
+			this._scrollbar.slider.y = scrollbarLimitMin;
 		}
-		if (this._scrollbar.slider.y >= MainContainer.HEIGHT - this._buttonRegionHeight - this._gap*2 - this._scrollbar.slider.height) {
-			this._scrollbar.slider.y = MainContainer.HEIGHT - this._buttonRegionHeight - this._gap*2 - this._scrollbar.slider.height;
+		if (this._scrollbar.slider.y >= scrollbarLimitMax) {
+			this._scrollbar.slider.y = scrollbarLimitMax;
 		}
+
+		let textWindowsLimitMin:number = -this._textWindowsContainer.height
+			+this._scrollbarHeight + this._gap;
+		let textWindowsLimitMax:number = this._gap;
+		if (this._textWindowsContainer.y <= textWindowsLimitMin) {
+			this._textWindowsContainer.y = textWindowsLimitMin;	
+		}
+		if (this._textWindowsContainer.y >= textWindowsLimitMax) {
+			this._textWindowsContainer.y = textWindowsLimitMax;	
+		}
+		console.log(this._textWindowsContainer.y)
 	}
 
 	private movingContentForScrollbardrag():void {
@@ -181,20 +195,20 @@ export default class MainContainer extends Container {
 
 		this._scrollbar.slider.y = (
 			(this._scrollbarHeight - this._scrollbar.slider.height)
-			* this._percentage);
+			* this._percentage
+		);
+		this.sliderYLimit();
 	}
 
 	private movingContentForWheel(wheelEvent:WheelEvent):void {
-		console.log("***********");
-
-
-
-		this._textWindowsContainer.y += 1;
-
-
-
-
-
+		const delta:number = 20*(wheelEvent.deltaY > 0 ? 1 : -1);
+		if (wheelEvent.deltaY > 0){
+			this._textWindowsContainer.y -= Math.abs(delta);
+		} else {
+			this._textWindowsContainer.y += Math.abs(delta);
+		}
+		this.sliderYLimit();
+		this.movingScrollbarForContentdrag();
 	}
 
 	private initialTextWindows():void {
@@ -271,7 +285,7 @@ export default class MainContainer extends Container {
 		}
 		if (object.removeEventListener) {
 			object.removeEventListener(type, callback, false);
-		} else if (object.dettachEvent) {
+		} else if (object.detachEvent) {
 			object.detachEvent("on" + type, callback);
 		} else {
 			object["on" + type] = null;
