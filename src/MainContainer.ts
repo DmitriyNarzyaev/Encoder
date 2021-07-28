@@ -16,7 +16,6 @@ export default class MainContainer extends Container {
 	private _textWindowsContainer:PIXI.Container
 	private _targetTextWindow:TextWindow;
 	private _encodeTextWindow:TextWindow;
-	private _buttonWidth:number = MainContainer.WIDTH / 10;
 	private _buttonHeight:number = MainContainer.HEIGHT / 20;
 	private _buttonRegionHeight:number = this._buttonHeight + this._gap*2;	//FIXME поправить - (MainContainer.HEIGHT/20)
 	private _scrollbar:Scrollbar;
@@ -31,7 +30,7 @@ export default class MainContainer extends Container {
 	constructor() {
 		super();
 		this.initialBackground();
-		this.initialTextWindows();
+		this.initialTextWindows("encode");
 		this._wheelHandler = MainContainer.addEvent(document, "wheel", this.movingContentForWheel.bind(this));
 	}
 
@@ -43,6 +42,13 @@ export default class MainContainer extends Container {
 	}
 
 	private initialButtons():void {
+		const button1width:number = 250;
+		const button2width:number = 270;
+		const button3width:number = 200;
+		const gap1:number = 0;
+		const gap2:number = button1width + this._gap;
+		const gap3:number = button2width + this._gap + gap2;
+
 		const buttonRegion:PIXI.Graphics = new PIXI.Graphics;
 		buttonRegion
 			.beginFill(this._elementsColor, .5)
@@ -52,43 +58,60 @@ export default class MainContainer extends Container {
 
 		let buttonContainer:PIXI.Container = new PIXI.Container;
 		this.addChild(buttonContainer);
-		this.initialOpenFileButton(buttonContainer);
-		this.initialSaveButton(buttonContainer);
+		this.initialEncodeFileButton(buttonContainer, button1width, gap1);
+		this.initialDecodeFileButton(buttonContainer, button2width, gap2);
+		this.initialSaveButton(buttonContainer, button3width, gap3);
 		buttonContainer.x = (MainContainer.WIDTH - buttonContainer.width)/2;
 		buttonContainer.y = MainContainer.HEIGHT - buttonContainer.height - this._gap;
 		this._buttonsIsAdded = true;
 	}
 
-	private initialOpenFileButton(buttonContainer:PIXI.Container):void {
+	private initialEncodeFileButton(buttonContainer:PIXI.Container, width:number, buttonX:number):void {
 		let button:Button;
 		button = new Button(
-			"OPEN",
+			"ЗАШИФРОВАТЬ",
 			this._elementsColor,
-			() => { this.openFileButtonFunction();},
-			this._buttonWidth,
+			() => { this.openFileButtonFunction("encode");},
+			width,
 			this._buttonHeight
 		);
 		button.buttonMode = true;
 		button.interactive = true;
+		button.x = buttonX;
 		buttonContainer.addChild(button);
 	}
 
-	private initialSaveButton(buttonContainer:PIXI.Container):void {
+	private initialDecodeFileButton(buttonContainer:PIXI.Container, width:number, buttonX:number):void {
 		let button:Button;
 		button = new Button(
-			"SAVE",
+			"РАСШИФРОВАТЬ",
+			this._elementsColor,
+			() => { this.openFileButtonFunction("decode");},
+			width,
+			this._buttonHeight
+		);
+		button.buttonMode = true;
+		button.interactive = true;
+		button.x = buttonX;
+		buttonContainer.addChild(button);
+	}
+
+	private initialSaveButton(buttonContainer:PIXI.Container, width:number, buttonX:number):void {
+		let button:Button;
+		button = new Button(
+			"СОХРАНИТЬ",
 			this._elementsColor,
 			() => { this.saveButtonFunction();},
-			this._buttonWidth,
+			width,
 			this._buttonHeight
 			);
 		button.buttonMode = true;
 		button.interactive = true;
-		button.x = button.width + this._gap;
+		button.x = buttonX;
 		buttonContainer.addChild(button);
 	}
 
-	private openFileButtonFunction():void {	
+	private openFileButtonFunction(code:string):void {
 		let input = document.createElement('input');
 		input.type = 'file';
 		input.onchange = e => { 
@@ -101,7 +124,7 @@ export default class MainContainer extends Container {
 				this.removeChild(this._scrollbar);
 				var content:string = readerEvent.target.result as string;
 				this._textText = content;
-				this.initialTextWindows();
+				this.initialTextWindows(code);
 			}
 		}
 		input.click();
@@ -157,14 +180,16 @@ export default class MainContainer extends Container {
 	}
 
 	private sliderYLimit():void {
-		let scrollbarLimitMin:number = 0;
-		let scrollbarLimitMax:number = MainContainer.HEIGHT - this._buttonRegionHeight
-			- this._gap*2 - this._scrollbar.slider.height;
-		if (this._scrollbar.slider.y <= scrollbarLimitMin) {
-			this._scrollbar.slider.y = scrollbarLimitMin;
-		}
-		if (this._scrollbar.slider.y >= scrollbarLimitMax) {
-			this._scrollbar.slider.y = scrollbarLimitMax;
+		if (this._scrollbar) {
+			let scrollbarLimitMin:number = 0;
+			let scrollbarLimitMax:number = MainContainer.HEIGHT - this._buttonRegionHeight
+				- this._gap*2 - this._scrollbar.slider.height;
+			if (this._scrollbar.slider.y <= scrollbarLimitMin) {
+				this._scrollbar.slider.y = scrollbarLimitMin;
+			}
+			if (this._scrollbar.slider.y >= scrollbarLimitMax) {
+				this._scrollbar.slider.y = scrollbarLimitMax;
+			}
 		}
 
 		let textWindowsLimitMin:number = -this._textWindowsContainer.height
@@ -176,7 +201,6 @@ export default class MainContainer extends Container {
 		if (this._textWindowsContainer.y >= textWindowsLimitMax) {
 			this._textWindowsContainer.y = textWindowsLimitMax;	
 		}
-		console.log(this._textWindowsContainer.y)
 	}
 
 	private movingContentForScrollbardrag():void {
@@ -194,10 +218,12 @@ export default class MainContainer extends Container {
 		this._percentage = (this._textWindowsContainer.y - this._gap) / workingLength;
 		console.log(this._percentage);
 
-		this._scrollbar.slider.y = (
-			(this._scrollbarHeight - this._scrollbar.slider.height)
-			* this._percentage
-		);
+		if (this._scrollbar) {
+			this._scrollbar.slider.y = (
+				(this._scrollbarHeight - this._scrollbar.slider.height)
+				* this._percentage
+			);
+		}		
 		this.sliderYLimit();
 	}
 
@@ -212,7 +238,7 @@ export default class MainContainer extends Container {
 		this.movingScrollbarForContentdrag();
 	}
 
-	private initialTextWindows():void {
+	private initialTextWindows(code:string):void {
 		this._textWindowsContainer = new PIXI.Container;
 		this.addChild(this._textWindowsContainer)
 
@@ -229,7 +255,12 @@ export default class MainContainer extends Container {
 		this._textWindowsContainer.addChild(this._targetTextWindow);
 
 		let encoder:Encoder = new Encoder;
-		this._encodeText = encoder.encodeText(this._textText);
+		if (code == "encode"){
+			this._encodeText = encoder.encodeText(this._textText);
+		} else if (code == "decode") {
+			this._encodeText = encoder.decodeText(this._textText);
+		}
+			
 		this._encodeTextWindow = new TextWindow(this._encodeText, this._elementsColor, windowWidth);
 		this._encodeTextWindow.x = this._gap;
 		this._encodeTextWindow.y = this._targetTextWindow.y + this._targetTextWindow.height + this._gap;
